@@ -1,0 +1,150 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
+  container-type: inline-size;
+  font-weight: bold;
+  user-select: none;
+
+  perspective: 1000px;
+
+  &.hidden {
+    .inner {
+      transform: rotateY(180deg);
+    }
+  }
+
+  .inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.2s;
+    transform-style: preserve-3d;
+    border-radius: 6%;
+
+    .front,
+    .back {
+      background-color: white;
+      border: 1px solid rgba(0, 0, 0, 0.285);
+      border-radius: inherit;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      padding: 5%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .front {
+      color: black;
+      font-size: 25cqw;
+
+      &.diamond,
+      &.heart {
+        color: rgb(148, 8, 8);
+        fill: rgb(148, 8, 8);
+      }
+
+      &.club,
+      &.spade {
+        color: black;
+        fill: black;
+      }
+
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .value {
+          color: inherit;
+        }
+      }
+
+      .middle {
+        flex-grow: 1;
+      }
+
+      .bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .value {
+          color: inherit;
+        }
+      }
+    }
+
+    .back {
+      color: white;
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+
+      .pattern {
+        display: flex;
+        flex-grow: 1;
+        background-color: #e5e5f7;
+        opacity: 0.8;
+        border-radius: inherit;
+        // background-image:
+        //   repeating-radial-gradient(circle at 0 0, transparent 0, #e5e5f7 10px),
+        //   repeating-linear-gradient(#444cf755, #3037af);
+
+        background-color: #e5e5f7;
+        opacity: 0.8;
+        background-image:
+          repeating-linear-gradient(
+            45deg,
+            #444cf7 25%,
+            transparent 25%,
+            transparent 75%,
+            #444cf7 75%,
+            #444cf7
+          ),
+          repeating-linear-gradient(
+            45deg,
+            #444cf7 25%,
+            #e5e5f7 25%,
+            #e5e5f7 75%,
+            #444cf7 75%,
+            #444cf7
+          );
+        background-position:
+          0 0,
+          5px 5px;
+        background-size: 10px 10px;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  .card {
+    .inner {
+      .front {
+        padding-top: 2px;
+
+        .top {
+          .value {
+            font-size: 48cqw;
+
+            &:last-child {
+              display: none;
+            }
+          }
+        }
+
+        .bottom {
+          display: none;
+        }
+      }
+    }
+  }
+}

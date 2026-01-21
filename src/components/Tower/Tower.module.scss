@@ -1,0 +1,10 @@
+.tower {
+  position: relative;
+  height: 100%;
+  width: 100%;
+
+  .card {
+    position: absolute;
+    left: 0;
+  }
+}
