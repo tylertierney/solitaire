@@ -11,12 +11,14 @@ type Props = {
   className?: string
 }
 
-type DragState = {
+export type DragState = {
   cardId: string | null
   offsetX: number
   offsetY: number
   x: number
   y: number
+  width: number
+  height: number
 }
 
 export default function GamePage({ gameState, className = '' }: Props) {
@@ -28,7 +30,10 @@ export default function GamePage({ gameState, className = '' }: Props) {
 
   const [drag, setDrag] = useState<DragState | null>(null)
 
-  const handlePointerDown = (e: React.PointerEvent, cardId: string) => {
+  const handlePointerDown = (
+    e: React.PointerEvent<HTMLDivElement>,
+    cardId: string,
+  ) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
 
     setDrag({
@@ -37,6 +42,8 @@ export default function GamePage({ gameState, className = '' }: Props) {
       offsetY: e.clientY - rect.top,
       x: rect.left,
       y: rect.top,
+      width: rect.width,
+      height: rect.height,
     })
 
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -54,10 +61,10 @@ export default function GamePage({ gameState, className = '' }: Props) {
     )
   }
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: PointerEvent) => {
     if (drag) {
-      // 🔥 DO YOUR "DROP" LOGIC HERE
-      console.log('Dropped card:', drag.cardId, drag.x, drag.y)
+      const el = document.elementFromPoint(e.clientX, e.clientY)
+      console.log(el)
     }
     setDrag(null)
   }
@@ -82,6 +89,7 @@ export default function GamePage({ gameState, className = '' }: Props) {
             <div
               key={idx}
               className={`${styles.cell} ${styles.foundationCell}`}
+              data-foundation={idx}
             >
               <span className={styles.foundationLabel}>A</span>
             </div>
@@ -104,7 +112,11 @@ export default function GamePage({ gameState, className = '' }: Props) {
         {tableau.map((cards, idx) => {
           return (
             <div key={idx} className={`${styles.cell} ${styles.tableauCell}`}>
-              <Tower cards={cards} />
+              <Tower
+                cards={cards}
+                drag={drag}
+                handlePointerDown={handlePointerDown}
+              />
             </div>
           )
         })}

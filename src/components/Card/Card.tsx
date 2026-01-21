@@ -12,11 +12,15 @@ import {
   type Suit,
 } from '../../models'
 
-type Props = Omit<HTMLAttributes<HTMLDivElement>, 'onClick'> & {
+type Props = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'onClick' | 'onPointerDown'
+> & {
   suit: Suit
   value: CardValue
   hidden: boolean
-  onClick: (card: CardType) => void
+  onClick?: (card: CardType) => void
+  onPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void
   style?: CSSProperties
   className?: string
 }
@@ -26,6 +30,7 @@ export default function Card({
   value,
   hidden,
   onClick,
+  onPointerDown,
   style = {},
   className,
   children,
@@ -41,6 +46,7 @@ export default function Card({
       className={`${className} ${styles.card} ${hidden ? styles.hidden : ''}`}
       style={style}
       {...rest}
+      onPointerDown={(e) => onPointerDown?.(e)}
       onClick={() => onClick?.({ suit, value } as CardType)}
     >
       <div className={styles.inner}>

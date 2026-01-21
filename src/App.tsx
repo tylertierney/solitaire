@@ -11,7 +11,7 @@ export default function App() {
       <GamePage gameState={moves[index]} />
 
       <div className={styles.footer}>
-        <button onClick={() => dispatch({ type: 'undo' })}>undoooo</button>
+        <button onClick={() => dispatch({ type: 'undo' })}>undo</button>
         <button onClick={() => dispatch({ type: 'redo' })}>redo</button>
       </div>
     </>
