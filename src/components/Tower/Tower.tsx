@@ -8,7 +8,7 @@ type Props = {
   drag: DragState | null
   handlePointerDown: (
     e: React.PointerEvent<HTMLDivElement>,
-    cardId: string,
+    card: CardType,
   ) => void
   onClick?: (card: CardType) => void
 }
@@ -24,7 +24,7 @@ export default function Tower({
   const mostCards = cards.slice(0, cards.length - 1)
   const topCard = cards.at(-1) as CardType
 
-  const isDragging = drag?.cardId === topCard.id
+  const isDragging = drag?.card?.id === topCard.id
 
   return (
     <div className={`${styles.tower}`}>
@@ -62,7 +62,7 @@ export default function Tower({
         suit={topCard.suit}
         value={topCard.value}
         hidden={topCard.hidden}
-        onPointerDown={(e) => handlePointerDown(e, topCard.id)}
+        onPointerDown={(e) => handlePointerDown(e, topCard)}
       />
     </div>
   )

@@ -15,6 +15,7 @@ export const suitToIconMap: Record<
 }
 
 export const cardValues = [
+  'A',
   2,
   3,
   4,
@@ -27,7 +28,6 @@ export const cardValues = [
   'J',
   'Q',
   'K',
-  'A',
 ] as const
 
 export type CardValue = (typeof cardValues)[number]

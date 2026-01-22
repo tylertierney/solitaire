@@ -7,6 +7,7 @@
   container-type: inline-size;
   font-weight: bold;
   user-select: none;
+  touch-action: none;
 
   perspective: 1000px;
 
@@ -63,6 +64,10 @@
 
         .value {
           color: inherit;
+        }
+
+        .icon {
+          display: none;
         }
       }
 
@@ -135,9 +140,14 @@
           .value {
             font-size: 48cqw;
 
-            &:last-child {
+            &:nth-child(2) {
               display: none;
             }
+          }
+
+          .icon {
+            display: flex;
+            width: 32cqw;
           }
         }
 

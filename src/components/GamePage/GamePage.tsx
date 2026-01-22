@@ -1,10 +1,11 @@
-import type { GameState } from '../../models'
+import type { CardType, GameState } from '../../models'
 import styles from './GamePage.module.scss'
 import Deck from '../Deck/Deck'
 import Tower from '../Tower/Tower'
 import RevealedStock from '../RevealedStock/RevealedStock'
-import { useDispatch } from '../../context/GameContext'
+import { useDispatch } from '../../context/HistoryContext'
 import { useEffect, useState } from 'react'
+import { getDropZoneFromEvent } from '../../utils/utils'
 
 type Props = {
   gameState: GameState
@@ -12,7 +13,7 @@ type Props = {
 }
 
 export type DragState = {
-  cardId: string | null
+  card: CardType | null
   offsetX: number
   offsetY: number
   x: number
@@ -32,12 +33,12 @@ export default function GamePage({ gameState, className = '' }: Props) {
 
   const handlePointerDown = (
     e: React.PointerEvent<HTMLDivElement>,
-    cardId: string,
+    card: CardType,
   ) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
 
     setDrag({
-      cardId,
+      card,
       offsetX: e.clientX - rect.left,
       offsetY: e.clientY - rect.top,
       x: rect.left,
@@ -45,8 +46,6 @@ export default function GamePage({ gameState, className = '' }: Props) {
       width: rect.width,
       height: rect.height,
     })
-
-    e.currentTarget.setPointerCapture(e.pointerId)
   }
 
   const handlePointerMove = (e: PointerEvent) => {
@@ -63,8 +62,23 @@ export default function GamePage({ gameState, className = '' }: Props) {
 
   const handlePointerUp = (e: PointerEvent) => {
     if (drag) {
-      const el = document.elementFromPoint(e.clientX, e.clientY)
-      console.log(el)
+      const dropZone = getDropZoneFromEvent(e)
+
+      if (!dropZone) {
+        setDrag(null)
+        return
+      }
+
+      const foundationDataEl = dropZone.dataset['foundation']
+
+      if (foundationDataEl) {
+        const foundationIdx = parseInt(foundationDataEl, 10)
+        dispatch({
+          type: 'moveToFoundation',
+          card: drag.card as CardType,
+          foundationIdx,
+        })
+      }
     }
     setDrag(null)
   }
@@ -81,32 +95,56 @@ export default function GamePage({ gameState, className = '' }: Props) {
     }
   }, [drag])
 
+  console.log(gameState)
+
   return (
     <>
       <div className={`${styles.gamePage} ${className}`}>
-        {foundations.map((_, idx) => {
+        {foundations.map((cards, idx) => {
           return (
             <div
               key={idx}
               className={`${styles.cell} ${styles.foundationCell}`}
               data-foundation={idx}
+              data-dropzone={true}
+              style={{ border: 'none !important' }}
             >
               <span className={styles.foundationLabel}>A</span>
+              <Deck
+                cards={cards}
+                drag={drag}
+                handlePointerDown={handlePointerDown}
+              />
             </div>
           )
         })}
 
         <div className={`${styles.cell} ${styles.blankCell}`}></div>
 
-        <div className={`${styles.cell} ${styles.stockpileCell}`}>
-          <RevealedStock cards={stockpile[0]} />
+        <div className={`${styles.cell}`}>
+          <RevealedStock
+            drag={drag}
+            handlePointerDown={handlePointerDown}
+            cards={stockpile[0]}
+          />
         </div>
 
         <div className={`${styles.cell} ${styles.stockpileCell}`}>
           <Deck
             onClick={() => dispatch({ type: 'revealStock' })}
             cards={stockpile[1]}
+            drag={drag}
           />
+          <span
+            className={styles.refreshIcon}
+            onClick={() => {
+              if (!stockpile[1].length) {
+                dispatch({ type: 'refreshStockpile' })
+              }
+            }}
+          >
+            refresh
+          </span>
         </div>
 
         {tableau.map((cards, idx) => {

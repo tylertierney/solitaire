@@ -1,6 +1,6 @@
 import styles from './App.module.scss'
 import GamePage from './components/GamePage/GamePage'
-import { useDispatch, useHistory } from './context/GameContext'
+import { useDispatch, useHistory } from './context/HistoryContext'
 
 export default function App() {
   const { moves, index } = useHistory()
@@ -11,6 +11,7 @@ export default function App() {
       <GamePage gameState={moves[index]} />
 
       <div className={styles.footer}>
+        <button onClick={() => dispatch({ type: 'reset' })}>reset</button>
         <button onClick={() => dispatch({ type: 'undo' })}>undo</button>
         <button onClick={() => dispatch({ type: 'redo' })}>redo</button>
       </div>

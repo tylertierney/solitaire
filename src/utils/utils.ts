@@ -59,3 +59,40 @@ export function getDefaultGameState(): GameState {
 export function randBoolean(): boolean {
   return [true, false][~~(Math.random() * 2)]
 }
+
+export function getDropZoneFromEvent(
+  e: PointerEvent | React.PointerEvent,
+): HTMLDivElement | null {
+  let el = document.elementFromPoint(
+    e.clientX,
+    e.clientY,
+  ) as HTMLDivElement | null
+
+  while (el) {
+    if (el.dataset.dropzone) {
+      return el
+    }
+    el = el.parentElement as HTMLDivElement
+  }
+
+  return null
+}
+
+export function canMoveToFoundation(
+  foundation: CardType[],
+  card: CardType,
+): boolean {
+  if (!foundation.length) {
+    if (card.value === 'A') return true
+    return false
+  }
+
+  const top = foundation.at(-1) as CardType
+
+  if (top.suit !== card.suit) return false
+
+  if (cardValues.indexOf(top.value) !== cardValues.indexOf(card.value) - 1)
+    return false
+
+  return true
+}

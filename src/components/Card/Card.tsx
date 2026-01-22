@@ -46,14 +46,27 @@ export default function Card({
       className={`${className} ${styles.card} ${hidden ? styles.hidden : ''}`}
       style={style}
       {...rest}
-      onPointerDown={(e) => onPointerDown?.(e)}
+      onPointerDown={(e) => {
+        // e.preventDefault()
+        // e.target.setPointerCapture(e.pointerId)
+        onPointerDown?.(e)
+      }}
       onClick={() => onClick?.({ suit, value } as CardType)}
+      onGotPointerCapture={(e) => {
+        const target = e.target as HTMLDivElement
+        target.releasePointerCapture(e.pointerId)
+      }}
     >
       <div className={styles.inner}>
         <div className={`${styles.front} ${styles[suit]}`}>
           <div className={styles.top}>
             <span className={styles.value}>{value}</span>
             <span className={styles.value}>{value}</span>
+            <span className={styles.icon}>
+              {suitToIconMap[suit]({
+                style: { width: 'inherit', height: 'inherit' },
+              })}
+            </span>
           </div>
           <div className={styles.middle}>
             {icon}

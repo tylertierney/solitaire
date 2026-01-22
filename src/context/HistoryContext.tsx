@@ -8,7 +8,7 @@ import {
   type Reducer,
 } from 'react'
 import type { CardType, GameState } from '../models'
-import { getDefaultGameState } from '../utils/utils'
+import { canMoveToFoundation, getDefaultGameState } from '../utils/utils'
 
 // export type GameActionType = 'reset'
 
@@ -23,6 +23,8 @@ type History = { moves: GameState[]; index: number }
 export type Action =
   // | { type: 'submit'; word: string }
   | { type: 'revealStock' }
+  | { type: 'moveToFoundation'; foundationIdx: number; card: CardType }
+  | { type: 'refreshStockpile' }
   | { type: 'undo' }
   | { type: 'redo' }
   | { type: 'reset' }
@@ -40,16 +42,19 @@ export function HistoryProvider({ children }: PropsWithChildren) {
     history: History,
     action: Action,
   ): History => {
+    const { moves, index } = history
+    const currState = moves.at(index) as GameState
+
     switch (action.type) {
       case 'revealStock': {
-        const { moves, index } = history
-        const prev = moves.at(index) as GameState
-
-        const { stockpile } = prev
+        const { stockpile } = currState
         const newState: GameState = {
-          ...prev,
+          ...currState,
           stockpile: [
-            [...stockpile[0], stockpile[1].at(-1) as CardType],
+            [
+              ...stockpile[0],
+              { ...stockpile[1].at(-1), hidden: false } as CardType,
+            ],
             [...stockpile[1].slice(0, stockpile[1].length - 1)],
           ],
         }
@@ -59,8 +64,68 @@ export function HistoryProvider({ children }: PropsWithChildren) {
           index: index + 1,
         }
       }
+      case 'moveToFoundation': {
+        const { foundationIdx, card } = action
+
+        if (!canMoveToFoundation(currState.foundations[foundationIdx], card)) {
+          return { moves, index }
+        }
+
+        const newTableau = [] as unknown as GameState['tableau']
+
+        let i = 0
+        while (i < currState.tableau.length) {
+          let j = 0
+          const tower: CardType[] = []
+          while (j < currState.tableau[i].length) {
+            const c = currState.tableau[i][j]
+            if (c.id === card.id) {
+              const prevCard = tower[j - 1]
+              if (prevCard) {
+                prevCard.hidden = false
+              }
+            } else {
+              tower.push(c)
+            }
+            j++
+          }
+          newTableau.push(tower)
+          i++
+        }
+
+        const newState: GameState = {
+          foundations: currState.foundations.map((f, i) => {
+            if (i === foundationIdx) {
+              return [...f, card]
+            }
+            return f
+          }) as GameState['foundations'],
+          stockpile: currState.stockpile.map((s) =>
+            s.filter((c) => c.id !== card.id),
+          ) as GameState['stockpile'],
+          tableau: newTableau,
+        }
+        return {
+          moves: [...moves.slice(0, index + 1), newState],
+          index: index + 1,
+        }
+      }
+      case 'refreshStockpile': {
+        const newState: GameState = {
+          ...currState,
+          stockpile: [
+            [],
+            currState.stockpile[0]
+              .toReversed()
+              .map((c) => ({ ...c, hidden: true })),
+          ],
+        }
+        return {
+          moves: [...moves.slice(0, index + 1), newState],
+          index: index + 1,
+        }
+      }
       case 'undo': {
-        const { moves, index } = history
         if (moves.length <= 1 || index <= 0) return history
         return {
           ...history,
@@ -68,7 +133,6 @@ export function HistoryProvider({ children }: PropsWithChildren) {
         }
       }
       case 'redo': {
-        const { moves, index } = history
         if (moves.length <= 1 || index >= moves.length - 1) return history
         return {
           ...history,
