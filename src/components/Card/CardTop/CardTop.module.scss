@@ -1,0 +1,34 @@
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+
+  .value {
+    color: inherit;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .icon {
+    display: flex;
+    width: 24cqw;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  .cardTop {
+    .value {
+      font-size: 48cqw;
+
+      &:nth-child(2) {
+        display: none;
+      }
+    }
+
+    .icon {
+      display: flex;
+      width: 32cqw;
+    }
+  }
+}

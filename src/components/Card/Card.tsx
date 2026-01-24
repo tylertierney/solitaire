@@ -11,6 +11,7 @@ import {
   type CardValue,
   type Suit,
 } from '../../models'
+import CardTop from './CardTop/CardTop'
 
 type Props = Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -38,7 +39,7 @@ export default function Card({
   children,
   ...rest
 }: PropsWithChildren<Props>) {
-  const icon = suitToIconMap[suit]({})
+  const icon = suitToIconMap[suit]({ style: { height: '100%', width: '100%' } })
 
   return (
     <div
@@ -58,22 +59,18 @@ export default function Card({
       <div className={styles.inner}>
         <div className={`${styles.front} ${styles[suit]}`}>
           <div className={styles.top}>
-            <span className={styles.value}>{value}</span>
-            <span className={styles.value}>{value}</span>
-            <span className={styles.icon}>
-              {suitToIconMap[suit]({
-                style: { width: 'inherit', height: 'inherit' },
-              })}
-            </span>
+            <CardTop suit={suit} value={value} />
           </div>
           <div className={styles.middle}>
             {icon}
             {children}
           </div>
-          <div className={styles.bottom}>
-            <span className={styles.value}>{value}</span>
-            <span className={styles.value}>{value}</span>
-          </div>
+          <CardTop
+            value={value}
+            suit={suit}
+            style={{ flexDirection: 'row-reverse' }}
+            className={styles.bottom}
+          />
         </div>
         <div className={styles.back}>
           <div className={styles.pattern}></div>

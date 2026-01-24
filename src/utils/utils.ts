@@ -16,7 +16,7 @@ export function generateDeck(): CardType[] {
     suits
       .map((suit) =>
         cardValues.map((value) => ({
-          id: suit + value,
+          id: `${suit}${value}` as CardType['id'],
           value,
           suit,
           hidden: true,
