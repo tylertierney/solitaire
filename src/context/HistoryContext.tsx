@@ -16,18 +16,9 @@ import {
   getDefaultGameState,
 } from '../utils/utils'
 
-// export type GameActionType = 'reset'
-
-// export const gameActionMap: Record<string, GameActionType> = {
-//   RESET: "reset",
-// } as const
-
-// export type GameActionType = typeof gameActionMap[keyof typeof gameActionMap]
-
 type History = { moves: GameState[]; index: number }
 
 export type Action =
-  | { type: 'initialize'; history: History }
   | { type: 'revealStock' }
   | { type: 'moveToFoundation'; foundationIdx: number; card: CardType }
   | {
@@ -56,10 +47,6 @@ const gameReducer: GameReducer = (
   const currState = moves.at(index) as GameState
 
   switch (action.type) {
-    case 'initialize': {
-      const { history } = action
-      return history
-    }
     case 'revealStock': {
       const { stockpile } = currState
       const newState: GameState = {
@@ -237,23 +224,18 @@ const gameReducer: GameReducer = (
   }
 }
 export function HistoryProvider({ children }: PropsWithChildren) {
-  const [history, dispatch] = useReducer(gameReducer, {
-    moves: [getDefaultGameState()],
-    index: 0,
-  })
+  const fromLocal = localStorage.getItem('solitaire-state')
 
-  // useEffect(() => {
-  //   const fromLocal = localStorage.getItem('solitaire-state')
-  //   console.log(fromLocal)
-  //   if (fromLocal) {
-  //     const historyFromLocal = JSON.parse(fromLocal) as History
-  //     dispatch({ type: 'initialize', history: historyFromLocal })
-  //   }
-  // }, [])
+  const [history, dispatch] = useReducer(
+    gameReducer,
+    fromLocal
+      ? (JSON.parse(fromLocal) as History)
+      : { moves: [getDefaultGameState()], index: 0 },
+  )
 
-  // useEffect(() => {
-  //   localStorage.setItem('solitaire-state', JSON.stringify(history))
-  // }, [history])
+  useEffect(() => {
+    localStorage.setItem('solitaire-state', JSON.stringify(history))
+  }, [history])
 
   return (
     <HistoryContext.Provider value={history}>

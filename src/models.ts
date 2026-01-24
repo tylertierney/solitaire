@@ -1,4 +1,4 @@
-import { Heart, Diamond, Club, Spade } from './svg/suits'
+import { Club, Diamond, Heart, Spade } from './svg/suits'
 
 export const suits = ['heart', 'spade', 'club', 'diamond'] as const
 
@@ -33,8 +33,8 @@ export const cardValues = [
 export type CardValue = (typeof cardValues)[number]
 
 export type CardType = {
-  id: string
-  suit: 'heart' | 'spade' | 'club' | 'diamond'
+  id: `${Suit}${CardValue}`
+  suit: Suit
   value: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 'J' | 'Q' | 'K' | 'A'
   hidden: boolean
 }
