@@ -8,7 +8,12 @@ import {
   type Reducer,
 } from 'react'
 import type { CardType, GameState } from '../models'
-import { canMoveToFoundation, getDefaultGameState } from '../utils/utils'
+import {
+  canMoveToFoundation,
+  canMoveToTableau,
+  cloneGameState,
+  getDefaultGameState,
+} from '../utils/utils'
 
 // export type GameActionType = 'reset'
 
@@ -24,6 +29,11 @@ export type Action =
   // | { type: 'submit'; word: string }
   | { type: 'revealStock' }
   | { type: 'moveToFoundation'; foundationIdx: number; card: CardType }
+  | {
+      type: 'moveToTableau'
+      targetTableauIdx: number
+      card: CardType
+    }
   | { type: 'refreshStockpile' }
   | { type: 'undo' }
   | { type: 'redo' }
@@ -108,6 +118,144 @@ export function HistoryProvider({ children }: PropsWithChildren) {
         return {
           moves: [...moves.slice(0, index + 1), newState],
           index: index + 1,
+        }
+      }
+      // case 'moveToTableau': {
+      //   const { targetTableauIdx, card } = action
+
+      //   // find if card comes from another tableau tower
+      //   let [sourceTableauIdx, sourceTableauTowerIdx] = [-1, -1]
+      //   let topCardOfTargetTableau: CardType | undefined
+
+      //   currState.tableau.forEach((t, i) => {
+      //     const sourceCardIdx = t.findIndex((c) => c.id === card.id)
+      //     if (sourceCardIdx > -1) {
+      //       sourceTableauIdx = i
+      //       sourceTableauTowerIdx = sourceCardIdx
+      //     }
+
+      //     if (i === targetTableauIdx) {
+      //       topCardOfTargetTableau = t.at(-1)
+      //     }
+      //   })
+
+      //   if (!canMoveToTableau(topCardOfTargetTableau, card)) {
+      //     return { moves, index }
+      //   }
+
+      //   if (sourceTableauIdx === targetTableauIdx) {
+      //     return { moves, index }
+      //   }
+
+      //   // filter all arrays
+
+      //   const newState: GameState = {
+      //     foundations: currState.foundations.map((arr) =>
+      //       arr.filter((c) => c.id !== card.id),
+      //     ) as GameState['foundations'],
+      //     stockpile: currState.stockpile.map((arr) =>
+      //       arr.filter((c) => c.id !== card.id),
+      //     ) as GameState['stockpile'],
+      //     tableau: currState.tableau.map((arr) =>
+      //       arr.filter((c) => c.id !== card.id),
+      //     ) as GameState['tableau'],
+      //   }
+
+      //   // add card and descendents to target
+
+      //   newState.tableau[targetTableauIdx] = [
+      //     ...newState.tableau[targetTableauIdx],
+      //     card,
+      //   ]
+
+      //   // flip top card from source tower
+      //   if (sourceTableauIdx > -1 && sourceTableauTowerIdx > -1) {
+      //     const topCard: CardType | undefined =
+      //       newState.tableau[sourceTableauIdx][sourceTableauTowerIdx - 1]
+      //     if (topCard) {
+      //       topCard.hidden = false
+      //     }
+      //   }
+
+      //   return {
+      //     moves: [...moves.slice(0, index + 1), newState],
+      //     index: index + 1,
+      //   }
+      // }
+      case 'moveToTableau': {
+        const { targetTableauIdx, card } = action
+
+        // find if card comes from another tableau tower
+        let [sourceTableauIdx, sourceTableauTowerIdx] = [-1, -1]
+        // let topCardOfTargetTableau: CardType | undefined
+
+        currState.tableau.forEach((t, i) => {
+          const sourceCardIdx = t.findIndex((c) => c.id === card.id)
+          if (sourceCardIdx > -1) {
+            sourceTableauIdx = i
+            sourceTableauTowerIdx = sourceCardIdx
+          }
+        })
+
+        const newState = cloneGameState(currState)
+
+        if (sourceTableauIdx > -1 && sourceTableauTowerIdx > -1) {
+          // card comes from a tableau tower
+
+          const cardAndDescendents = currState.tableau[sourceTableauIdx].slice(
+            sourceTableauTowerIdx,
+          )
+
+          if (
+            !canMoveToTableau(
+              currState.tableau[targetTableauIdx].at(-1),
+              cardAndDescendents[0],
+            )
+          ) {
+            return { moves, index }
+          }
+
+          newState.tableau[targetTableauIdx] = [
+            ...newState.tableau[targetTableauIdx],
+            ...cardAndDescendents,
+          ]
+
+          const prevCardFromSourceTower = newState.tableau[sourceTableauIdx].at(
+            sourceTableauTowerIdx - 1,
+          )
+          if (prevCardFromSourceTower) {
+            prevCardFromSourceTower.hidden = false
+          }
+          newState.tableau[sourceTableauIdx] = newState.tableau[
+            sourceTableauIdx
+          ].slice(0, sourceTableauTowerIdx)
+
+          return {
+            moves: [...moves.slice(0, index + 1), newState],
+            index: index + 1,
+          }
+        } else {
+          // card comes from foundation or stockpile
+          if (
+            !canMoveToTableau(currState.tableau[targetTableauIdx].at(-1), card)
+          ) {
+            return { moves, index }
+          }
+
+          // filter the card out from all arrays
+          newState.foundations = newState.foundations.map((arr) =>
+            arr.filter((c) => c.id !== card.id),
+          ) as GameState['foundations']
+          newState.stockpile = newState.stockpile.map((arr) =>
+            arr.filter((c) => c.id !== card.id),
+          ) as GameState['stockpile']
+
+          newState.tableau[targetTableauIdx].push(card)
+
+          return {
+            moves: [...moves.slice(0, index + 1), newState],
+            index: index + 1,
+          }
         }
       }
       case 'refreshStockpile': {

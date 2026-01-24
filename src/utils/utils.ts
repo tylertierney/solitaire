@@ -19,7 +19,7 @@ export function generateDeck(): CardType[] {
           id: suit + value,
           value,
           suit,
-          hidden: randBoolean(),
+          hidden: true,
         })),
       )
       .flat(),
@@ -53,6 +53,9 @@ export function getDefaultGameState(): GameState {
     foundations: [[], [], [], []],
     stockpile: [[], deck],
     tableau,
+    // tableau: tableau.map((t, i) =>
+    //   i === tableau.length - 1 ? t.map((c) => ({ ...c, hidden: false })) : t,
+    // ) as GameState['tableau'],
   }
 }
 
@@ -95,4 +98,49 @@ export function canMoveToFoundation(
     return false
 
   return true
+}
+
+export const getCardColor = (card: CardType): 'red' | 'black' => {
+  const map: Record<CardType['suit'], 'red' | 'black'> = {
+    diamond: 'red',
+    heart: 'red',
+    spade: 'black',
+    club: 'black',
+  }
+
+  return map[card.suit]
+}
+
+export const cardIsBlack = (card: CardType) => {
+  return card.suit === 'spade' || card.suit === 'club'
+}
+
+export function canMoveToTableau(
+  topCardFromTarget: CardType | undefined,
+  card: CardType,
+): boolean {
+  if (!topCardFromTarget) {
+    return card.value === 'K'
+  }
+
+  if (getCardColor(topCardFromTarget) === getCardColor(card)) {
+    return false
+  }
+
+  return (
+    cardValues.indexOf(topCardFromTarget.value) ===
+    cardValues.indexOf(card.value) + 1
+  )
+}
+
+export const cloneGameState = (prev: GameState): GameState => {
+  return {
+    foundations: [
+      ...prev.foundations.map((arr) => [...arr]),
+    ] as GameState['foundations'],
+    stockpile: [
+      ...prev.stockpile.map((arr) => [...arr]),
+    ] as GameState['stockpile'],
+    tableau: [...prev.tableau.map((arr) => [...arr])] as GameState['tableau'],
+  }
 }

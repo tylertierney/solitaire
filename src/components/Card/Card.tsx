@@ -1,9 +1,9 @@
 import styles from './Card.module.scss'
 import {
-  useRef,
   type CSSProperties,
   type HTMLAttributes,
   type PropsWithChildren,
+  type RefObject,
 } from 'react'
 import {
   suitToIconMap,
@@ -19,6 +19,7 @@ type Props = Omit<
   suit: Suit
   value: CardValue
   hidden: boolean
+  ref?: RefObject<HTMLDivElement | null>
   onClick?: (card: CardType) => void
   onPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void
   style?: CSSProperties
@@ -29,6 +30,7 @@ export default function Card({
   suit,
   value,
   hidden,
+  ref,
   onClick,
   onPointerDown,
   style = {},
@@ -36,26 +38,22 @@ export default function Card({
   children,
   ...rest
 }: PropsWithChildren<Props>) {
-  const cardRef = useRef<HTMLDivElement | null>(null)
-
   const icon = suitToIconMap[suit]({})
 
   return (
     <div
-      ref={cardRef}
+      ref={ref}
       className={`${className} ${styles.card} ${hidden ? styles.hidden : ''}`}
       style={style}
       {...rest}
       onPointerDown={(e) => {
-        // e.preventDefault()
-        // e.target.setPointerCapture(e.pointerId)
         onPointerDown?.(e)
       }}
-      onClick={() => onClick?.({ suit, value } as CardType)}
       onGotPointerCapture={(e) => {
         const target = e.target as HTMLDivElement
         target.releasePointerCapture(e.pointerId)
       }}
+      onClick={() => onClick?.({ suit, value } as CardType)}
     >
       <div className={styles.inner}>
         <div className={`${styles.front} ${styles[suit]}`}>

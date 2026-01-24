@@ -1,68 +1,71 @@
-import styles from './Tower.module.scss'
+import { useRef } from 'react'
+import { useDrag } from '../../context/DragContext'
 import type { CardType } from '../../models'
 import Card from '../Card/Card'
-import type { DragState } from '../GamePage/GamePage'
+import styles from '../tower/Tower.module.scss'
 
 type Props = {
   cards: CardType[]
-  drag: DragState | null
-  handlePointerDown: (
-    e: React.PointerEvent<HTMLDivElement>,
-    card: CardType,
-  ) => void
-  onClick?: (card: CardType) => void
+  index?: number
+  dragIndex?: number
 }
 
-export default function Tower({
-  cards = [],
-  drag,
-  handlePointerDown,
-  onClick,
-}: Props) {
-  if (!cards.length) return <div className={`${styles.tower}`}></div>
+export default function Tower({ cards, index = 0, dragIndex = 0 }: Props) {
+  const { drag, handlePointerDown } = useDrag()
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
-  const mostCards = cards.slice(0, cards.length - 1)
-  const topCard = cards.at(-1) as CardType
+  if (!cards.length) return null
 
-  const isDragging = drag?.card?.id === topCard.id
+  const bottomCard = cards.at(0) as CardType
+  const restOfCards = cards.slice(1)
+
+  if (drag?.card?.id === bottomCard.id) {
+    dragIndex = 1
+  }
 
   return (
-    <div className={`${styles.tower}`}>
-      {mostCards.length &&
-        mostCards.map(({ suit, value, hidden }, idx) => (
-          <Card
-            key={idx}
-            suit={suit}
-            hidden={hidden}
-            value={value}
-            onClick={(c) => onClick?.(c)}
-            className={styles.card}
-            style={{
-              top: `calc(17% * ${idx})`,
-            }}
-          />
-        ))}
+    <div
+      className={`${styles.tower}`}
+      style={
+        dragIndex && drag
+          ? {
+              position: 'fixed',
+              left: drag.x,
+              top: drag.y + (dragIndex - 1) * 30 + 'px',
+              zIndex: 1000,
+              pointerEvents: 'none',
+              width: drag.width + 'px',
+              height: drag.height + 'px',
+            }
+          : {
+              position: index === 0 ? 'relative' : 'absolute',
+              top: index === 0 ? 0 : '30px',
+            }
+      }
+      onClick={(e) => {
+        e.stopPropagation()
+      }}
+      onPointerDown={(e) => {
+        if (bottomCard.hidden) return
+        handlePointerDown?.(e, bottomCard)
+        e.stopPropagation()
+      }}
+      onGotPointerCapture={(e) => {
+        const target = e.target as HTMLDivElement
+        target.releasePointerCapture(e.pointerId)
+      }}
+    >
       <Card
+        ref={cardRef}
         className={styles.card}
-        style={
-          isDragging
-            ? {
-                position: 'fixed',
-                left: drag.x,
-                top: drag.y,
-                zIndex: 1000,
-                pointerEvents: 'none',
-                width: drag.width + 'px',
-                height: drag.height + 'px',
-              }
-            : {
-                top: `calc(17% * ${mostCards.length})`,
-              }
-        }
-        suit={topCard.suit}
-        value={topCard.value}
-        hidden={topCard.hidden}
-        onPointerDown={(e) => handlePointerDown(e, topCard)}
+        suit={bottomCard.suit}
+        value={bottomCard.value}
+        hidden={bottomCard.hidden}
+      />
+      <Tower
+        cards={restOfCards}
+        index={index + 1}
+        dragIndex={dragIndex ? dragIndex + 1 : 0}
       />
     </div>
   )

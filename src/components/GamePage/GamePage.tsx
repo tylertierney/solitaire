@@ -1,11 +1,9 @@
-import type { CardType, GameState } from '../../models'
-import styles from './GamePage.module.scss'
-import Deck from '../Deck/Deck'
-import Tower from '../Tower/Tower'
-import RevealedStock from '../RevealedStock/RevealedStock'
 import { useDispatch } from '../../context/HistoryContext'
-import { useEffect, useState } from 'react'
-import { getDropZoneFromEvent } from '../../utils/utils'
+import type { CardType, GameState } from '../../models'
+import Deck from '../Deck/Deck'
+import RevealedStock from '../RevealedStock/RevealedStock'
+import Tower from '../Tower/Tower'
+import styles from './GamePage.module.scss'
 
 type Props = {
   gameState: GameState
@@ -29,74 +27,6 @@ export default function GamePage({ gameState, className = '' }: Props) {
 
   const blankSpaces = Array(7).fill(null)
 
-  const [drag, setDrag] = useState<DragState | null>(null)
-
-  const handlePointerDown = (
-    e: React.PointerEvent<HTMLDivElement>,
-    card: CardType,
-  ) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-
-    setDrag({
-      card,
-      offsetX: e.clientX - rect.left,
-      offsetY: e.clientY - rect.top,
-      x: rect.left,
-      y: rect.top,
-      width: rect.width,
-      height: rect.height,
-    })
-  }
-
-  const handlePointerMove = (e: PointerEvent) => {
-    setDrag((prev) =>
-      prev
-        ? {
-            ...prev,
-            x: e.clientX - prev.offsetX,
-            y: e.clientY - prev.offsetY,
-          }
-        : null,
-    )
-  }
-
-  const handlePointerUp = (e: PointerEvent) => {
-    if (drag) {
-      const dropZone = getDropZoneFromEvent(e)
-
-      if (!dropZone) {
-        setDrag(null)
-        return
-      }
-
-      const foundationDataEl = dropZone.dataset['foundation']
-
-      if (foundationDataEl) {
-        const foundationIdx = parseInt(foundationDataEl, 10)
-        dispatch({
-          type: 'moveToFoundation',
-          card: drag.card as CardType,
-          foundationIdx,
-        })
-      }
-    }
-    setDrag(null)
-  }
-
-  useEffect(() => {
-    if (!drag) return
-
-    window.addEventListener('pointermove', handlePointerMove)
-    window.addEventListener('pointerup', handlePointerUp)
-
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove)
-      window.removeEventListener('pointerup', handlePointerUp)
-    }
-  }, [drag])
-
-  console.log(gameState)
-
   return (
     <>
       <div className={`${styles.gamePage} ${className}`}>
@@ -110,11 +40,7 @@ export default function GamePage({ gameState, className = '' }: Props) {
               style={{ border: 'none !important' }}
             >
               <span className={styles.foundationLabel}>A</span>
-              <Deck
-                cards={cards}
-                drag={drag}
-                handlePointerDown={handlePointerDown}
-              />
+              <Deck cards={cards} allowDragFromTop={true} />
             </div>
           )
         })}
@@ -122,19 +48,17 @@ export default function GamePage({ gameState, className = '' }: Props) {
         <div className={`${styles.cell} ${styles.blankCell}`}></div>
 
         <div className={`${styles.cell}`}>
-          <RevealedStock
-            drag={drag}
-            handlePointerDown={handlePointerDown}
-            cards={stockpile[0]}
-          />
+          <RevealedStock cards={stockpile[0]} />
         </div>
 
         <div className={`${styles.cell} ${styles.stockpileCell}`}>
-          <Deck
-            onClick={() => dispatch({ type: 'revealStock' })}
-            cards={stockpile[1]}
-            drag={drag}
-          />
+          {stockpile[1].length ? (
+            <Deck
+              onClick={() => dispatch({ type: 'revealStock' })}
+              cards={stockpile[1]}
+              style={{ zIndex: 1 }}
+            />
+          ) : null}
           <span
             className={styles.refreshIcon}
             onClick={() => {
@@ -149,12 +73,13 @@ export default function GamePage({ gameState, className = '' }: Props) {
 
         {tableau.map((cards, idx) => {
           return (
-            <div key={idx} className={`${styles.cell} ${styles.tableauCell}`}>
-              <Tower
-                cards={cards}
-                drag={drag}
-                handlePointerDown={handlePointerDown}
-              />
+            <div
+              key={idx}
+              className={`${styles.cell} ${styles.tableauCell}`}
+              data-tableau={idx}
+              data-dropzone={true}
+            >
+              <Tower cards={cards} />
             </div>
           )
         })}

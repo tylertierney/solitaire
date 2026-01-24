@@ -1,26 +1,16 @@
 import styles from './RevealedStock.module.scss'
 import type { CardType } from '../../models'
 import Card from '../Card/Card'
-import type { DragState } from '../GamePage/GamePage'
+import { useDrag } from '../../context/DragContext'
 
 type Props = {
   cards: CardType[]
-  drag: DragState | null
-  handlePointerDown: (
-    e: React.PointerEvent<HTMLDivElement>,
-    card: CardType,
-  ) => void
 }
 
-export default function RevealedStock({
-  cards = [],
-  drag,
-  handlePointerDown,
-}: Props) {
+export default function RevealedStock({ cards = [] }: Props) {
+  const { drag, handlePointerDown } = useDrag()
   if (!cards.length) return null
 
-  // const max = Math.max(cards.length - 3, 0)
-  // const topThree = cards.slice(max).toReversed()
   const topCard = cards.at(-1) as CardType
   const isDragging = drag?.card?.id === topCard.id
 
@@ -29,18 +19,6 @@ export default function RevealedStock({
 
   return (
     <div className={styles.revealedStock}>
-      {/* {topThree.slice(1, 3).map(({ suit, value }, idx) => (
-        <Card
-          key={idx}
-          suit={suit}
-          value={value}
-          hidden={false}
-          style={{
-            right: idx + 1 * 46 + '%',
-          }}
-          className={styles.card}
-        />
-      ))} */}
       {thirdCard && (
         <Card
           suit={thirdCard.suit}

@@ -6,6 +6,11 @@
   grid-row-gap: 8px;
   max-width: 700px;
   min-width: 700px;
+  -webkit-user-select: none; /* For WebKit/iOS */
+  -moz-user-select: none; /* For Firefox */
+  -ms-user-select: none; /* For IE/Edge */
+  user-select: none;
+  --webkit-tap-highlight-color: transparent;
 
   .cell {
     aspect-ratio: 130 / 200;

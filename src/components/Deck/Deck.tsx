@@ -1,32 +1,34 @@
 import styles from './Deck.module.scss'
 import type { CardType } from '../../models'
 import Card from '../Card/Card'
-import type { DragState } from '../GamePage/GamePage'
+import { type CSSProperties } from 'react'
+import { useDrag } from '../../context/DragContext'
 
 type Props = {
   cards: CardType[]
-  drag: DragState | null
-  handlePointerDown?: (
-    e: React.PointerEvent<HTMLDivElement>,
-    card: CardType,
-  ) => void
+  allowDragFromTop?: boolean
   onClick?: (card: CardType) => void
+  style?: CSSProperties
 }
 
 export default function Deck({
   cards = [],
-  drag,
-  handlePointerDown,
+  allowDragFromTop = false,
   onClick,
+  style = {},
 }: Props) {
+  const { drag, handlePointerDown } = useDrag()
   const topCard = cards.at(-1) as CardType
   const isDragging = drag?.card?.id === topCard?.id
 
   return (
-    <div className={`${styles.deck}`}>
+    <div className={`${styles.deck}`} style={style}>
       {cards.map(({ suit, value, hidden }, idx) => (
         <Card
-          onPointerDown={(e) => handlePointerDown?.(e, topCard)}
+          onPointerDown={(e) => {
+            if (!allowDragFromTop) return
+            handlePointerDown?.(e, topCard)
+          }}
           key={idx}
           suit={suit}
           hidden={hidden}
