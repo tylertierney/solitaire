@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useDrag } from '../../context/DragContext'
 import type { CardType } from '../../models'
 import Card from '../Card/Card'
-import styles from '../tower/Tower.module.scss'
+import styles from './Tower.module.scss'
 
 type Props = {
   cards: CardType[]
