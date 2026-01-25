@@ -6,6 +6,7 @@
   grid-row-gap: 8px;
   max-width: 700px;
   min-width: 700px;
+  margin-top: 2rem;
   -webkit-user-select: none; /* For WebKit/iOS */
   -moz-user-select: none; /* For Firefox */
   -ms-user-select: none; /* For IE/Edge */
@@ -45,7 +46,9 @@
     }
 
     &.stockpileCell {
-      background-color: green;
+      border-radius: 6%;
+      color: var(--cell-color);
+      stroke: var(--cell-color);
 
       .refreshIcon {
         position: absolute;

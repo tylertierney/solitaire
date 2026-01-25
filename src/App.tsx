@@ -1,20 +1,15 @@
-import styles from './App.module.scss'
+import ControlPanel from './components/ControlPanel/ControlPanel'
 import GamePage from './components/GamePage/GamePage'
-import { useDispatch, useHistory } from './context/HistoryContext'
+import { useHistory } from './context/HistoryContext'
 
 export default function App() {
   const { moves, index } = useHistory()
-  const dispatch = useDispatch()
 
   return (
     <>
       <GamePage gameState={moves[index]} />
 
-      <div className={styles.footer}>
-        <button onClick={() => dispatch({ type: 'reset' })}>reset</button>
-        <button onClick={() => dispatch({ type: 'undo' })}>undo</button>
-        <button onClick={() => dispatch({ type: 'redo' })}>redo</button>
-      </div>
+      <ControlPanel />
     </>
   )
 }

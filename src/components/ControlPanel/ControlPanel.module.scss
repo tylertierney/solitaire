@@ -1,0 +1,33 @@
+.controlPanel {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  translate: -50% 0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 2rem;
+    background: rgba(0, 0, 0, 0.805);
+    color: white;
+    stroke: white;
+    border: none;
+    cursor: pointer;
+
+    @media (hover: hover) {
+      &:hover {
+        background: rgba(0, 0, 0, 0.886);
+      }
+    }
+
+    &:first-child,
+    &:nth-child(2) {
+      border-right: 1px solid rgba(255, 255, 255, 0.194);
+    }
+  }
+}

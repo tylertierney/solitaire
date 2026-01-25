@@ -1,5 +1,6 @@
 import { useDispatch } from '../../context/HistoryContext'
 import type { CardType, GameState } from '../../models'
+import { RefreshIcon } from '../../svg/RefreshIcon'
 import Deck from '../Deck/Deck'
 import RevealedStock from '../RevealedStock/RevealedStock'
 import Tower from '../Tower/Tower'
@@ -51,24 +52,27 @@ export default function GamePage({ gameState, className = '' }: Props) {
           <RevealedStock cards={stockpile[0]} />
         </div>
 
-        <div className={`${styles.cell} ${styles.stockpileCell}`}>
-          {stockpile[1].length ? (
-            <Deck
-              onClick={() => dispatch({ type: 'revealStock' })}
-              cards={stockpile[1]}
-              style={{ zIndex: 1 }}
+        <div
+          onClick={() => {
+            if (stockpile[1].length) {
+              dispatch({ type: 'revealStock' })
+            } else {
+              dispatch({ type: 'refreshStockpile' })
+            }
+          }}
+          className={`${styles.cell} ${styles.stockpileCell}`}
+        >
+          <span className={styles.refreshIcon}>
+            <RefreshIcon
+              width='56px'
+              height='56px'
+              stroke='#999'
+              strokeWidth={1.8}
             />
-          ) : null}
-          <span
-            className={styles.refreshIcon}
-            onClick={() => {
-              if (!stockpile[1].length) {
-                dispatch({ type: 'refreshStockpile' })
-              }
-            }}
-          >
-            refresh
           </span>
+          {stockpile[1].length ? (
+            <Deck cards={stockpile[1]} style={{ zIndex: 1 }} />
+          ) : null}
         </div>
 
         {tableau.map((cards, idx) => {
@@ -85,7 +89,12 @@ export default function GamePage({ gameState, className = '' }: Props) {
         })}
 
         {blankSpaces.map((_, idx) => (
-          <div key={idx} className={`${styles.cell} ${styles.blankCell}`}></div>
+          <div
+            data-tableau={idx}
+            data-dropzone={true}
+            key={idx}
+            className={`${styles.cell} ${styles.blankCell}`}
+          ></div>
         ))}
       </div>
     </>

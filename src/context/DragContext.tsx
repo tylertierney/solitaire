@@ -65,6 +65,7 @@ export function DragProvider({ children }: PropsWithChildren) {
 
   const handlePointerUp = (e: PointerEvent) => {
     if (drag) {
+      console.log(drag)
       const dropZone = getDropZoneFromEvent(e)
 
       if (!dropZone) {
