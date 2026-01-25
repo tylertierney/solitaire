@@ -3,7 +3,19 @@
 }
 
 body {
-  background-color: rgb(17, 65, 31);
+  --bg-color: rgb(17, 65, 31);
+  --bg-color-pattern: #124811;
+  --bg-color-pattern-2: #12481177;
+
+  --bg-card: white;
+  --black-card-color: black;
+  --red-card-color: rgb(148, 8, 8);
+  --card-border-color: rgba(0, 0, 0, 0.285);
+
+  --card-back-pattern: #444cf7;
+  --card-back-pattern-2: #e5e5f7;
+
+  background-color: var(--bg-color);
   display: flex;
   flex-direction: column;
   font-family: serif;
@@ -14,51 +26,51 @@ body {
   background-image:
     linear-gradient(
       30deg,
-      #124811 12%,
+      var(--bg-color-pattern) 12%,
       transparent 12.5%,
       transparent 87%,
-      #124811 87.5%,
-      #124811
+      var(--bg-color-pattern) 87.5%,
+      var(--bg-color-pattern)
     ),
     linear-gradient(
       150deg,
-      #124811 12%,
+      var(--bg-color-pattern) 12%,
       transparent 12.5%,
       transparent 87%,
-      #124811 87.5%,
-      #124811
+      var(--bg-color-pattern) 87.5%,
+      var(--bg-color-pattern)
     ),
     linear-gradient(
       30deg,
-      #124811 12%,
+      var(--bg-color-pattern) 12%,
       transparent 12.5%,
       transparent 87%,
-      #124811 87.5%,
-      #124811
+      var(--bg-color-pattern) 87.5%,
+      var(--bg-color-pattern)
     ),
     linear-gradient(
       150deg,
-      #124811 12%,
+      var(--bg-color-pattern) 12%,
       transparent 12.5%,
       transparent 87%,
-      #124811 87.5%,
-      #124811
+      var(--bg-color-pattern) 87.5%,
+      var(--bg-color-pattern)
     ),
     linear-gradient(
       60deg,
-      #12481177 25%,
+      var(--bg-color-pattern-2) 25%,
       transparent 25.5%,
       transparent 75%,
-      #12481177 75%,
-      #12481177
+      var(--bg-color-pattern-2) 75%,
+      var(--bg-color-pattern-2)
     ),
     linear-gradient(
       60deg,
-      #12481177 25%,
+      var(--bg-color-pattern-2) 25%,
       transparent 25.5%,
       transparent 75%,
-      #12481177 75%,
-      #12481177
+      var(--bg-color-pattern-2) 75%,
+      var(--bg-color-pattern-2)
     );
   background-size: 20px 35px;
   background-position:
@@ -74,6 +86,20 @@ body {
     flex-direction: column;
     gap: 1rem;
     align-items: center;
+  }
+
+  &.dark-theme {
+    --bg-color: rgb(21, 21, 21);
+    --bg-color-pattern: rgb(27, 27, 27);
+    --bg-color-pattern-2: rgb(24, 24, 24);
+
+    --bg-card: black;
+    --black-card-color: rgb(241, 241, 241);
+    --red-card-color: rgb(255, 71, 71);
+    --card-border-color: rgba(255, 255, 255, 0.2);
+
+    --card-back-pattern: #0b1a42;
+    --card-back-pattern-2: #464672;
   }
 }
 

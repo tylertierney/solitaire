@@ -1,12 +1,17 @@
 .tower {
-  // position: relative;
   height: 100%;
   width: 100%;
-  // top: 5cqh;
   container-type: inline-size;
 
   .card {
     position: absolute;
     left: 0;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    background: green;
+    position: fixed;
   }
 }

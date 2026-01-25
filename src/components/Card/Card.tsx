@@ -54,7 +54,9 @@ export default function Card({
         const target = e.target as HTMLDivElement
         target.releasePointerCapture(e.pointerId)
       }}
-      onClick={() => onClick?.({ suit, value } as CardType)}
+      onClick={() => {
+        onClick?.({ suit, value } as CardType)
+      }}
     >
       <div className={styles.inner}>
         <div className={`${styles.front} ${styles[suit]}`}>

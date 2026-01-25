@@ -44,7 +44,7 @@ const gameReducer: GameReducer = (
   action: Action,
 ): History => {
   const { moves, index } = history
-  const currState = moves.at(index) as GameState
+  const currState = cloneGameState(moves.at(index) as GameState)
 
   switch (action.type) {
     case 'revealStock': {
@@ -99,7 +99,7 @@ const gameReducer: GameReducer = (
           if (i === foundationIdx) {
             return [...f, card]
           }
-          return f
+          return f.filter((c) => c.id !== card.id)
         }) as GameState['foundations'],
         stockpile: currState.stockpile.map((s) =>
           s.filter((c) => c.id !== card.id),

@@ -7,11 +7,12 @@
   max-width: 700px;
   min-width: 700px;
   margin-top: 2rem;
-  -webkit-user-select: none; /* For WebKit/iOS */
-  -moz-user-select: none; /* For Firefox */
-  -ms-user-select: none; /* For IE/Edge */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   --webkit-tap-highlight-color: transparent;
+  font-family: serif;
 
   .cell {
     aspect-ratio: 130 / 200;

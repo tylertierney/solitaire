@@ -82,22 +82,27 @@ export function getDropZoneFromEvent(
   e: PointerEvent | React.PointerEvent,
   drag: DragState,
 ): HTMLDivElement | null {
-  let el = document.elementFromPoint(
-    e.clientX,
-    e.clientY,
-  ) as HTMLDivElement | null
+  const coordsOnCard = [
+    [e.clientX, e.clientY],
 
-  el = traverseUpThroughDomForDropzoneAttr(el)
+    //top
+    [drag.x + 0.5 * drag.width, drag.y],
+    //right
+    [drag.x + drag.width, drag.y + 0.5 * drag.height],
+    //bottom
+    [drag.x + 0.5 * drag.width, drag.y + drag.height],
+    //left
+    [drag.x, drag.y + 0.5 * drag.height],
+  ]
 
-  // try a coord at the top middle of the card
-  if (!el) {
-    el = document.elementFromPoint(
-      drag.x - drag.offsetX + 0.5 * drag.width,
-      drag.y - drag.offsetY,
-    ) as HTMLDivElement | null
+  for (const [x, y] of coordsOnCard) {
+    const el = document.elementFromPoint(x, y) as HTMLDivElement | null
+
+    const res = traverseUpThroughDomForDropzoneAttr(el)
+    if (res) return res
   }
 
-  return traverseUpThroughDomForDropzoneAttr(el)
+  return null
 }
 
 export function canMoveToFoundation(

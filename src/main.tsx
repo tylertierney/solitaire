@@ -4,12 +4,15 @@ import './index.scss'
 import App from './App.tsx'
 import { HistoryProvider } from './context/HistoryContext.tsx'
 import { DragProvider } from './context/DragContext.tsx'
+import { ThemeProvider } from './context/ThemeContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HistoryProvider>
       <DragProvider>
-        <App />
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
       </DragProvider>
     </HistoryProvider>
   </StrictMode>,

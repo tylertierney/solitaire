@@ -1,4 +1,5 @@
 import { useDispatch, useHistory } from '../../context/HistoryContext'
+import { useTheme } from '../../context/ThemeContext'
 import { CardFanIcon } from '../../svg/CardFanIcon'
 import styles from './Menu.module.scss'
 
@@ -7,6 +8,7 @@ type Props = {
 }
 
 export default function Menu({ onNewGame }: Props) {
+  const { darkTheme, setDarkTheme } = useTheme()
   const { moves } = useHistory()
   const dispatch = useDispatch()
 
@@ -15,6 +17,12 @@ export default function Menu({ onNewGame }: Props) {
       <li className={`${styles.li} ${styles.moves}`}>
         <span>Moves:</span>
         <span>{moves.length}</span>
+      </li>
+      <li className={`${styles.li}`}>
+        <span>Toggle theme</span>
+        <button onClick={() => setDarkTheme((prev) => !prev)}>
+          {darkTheme ? 'light' : 'dark'}
+        </button>
       </li>
       <li className={`${styles.li} ${styles.newGame}`}>
         <button
