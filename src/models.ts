@@ -52,3 +52,13 @@ export type GameState = {
     CardType[],
   ]
 }
+
+export type DragState = {
+  card: CardType | null
+  offsetX: number
+  offsetY: number
+  x: number
+  y: number
+  width: number
+  height: number
+}

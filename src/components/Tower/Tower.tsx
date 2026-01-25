@@ -32,7 +32,7 @@ export default function Tower({ cards, index = 0, dragIndex = 0 }: Props) {
               position: 'fixed',
               left: drag.x,
               top: drag.y + (dragIndex - 1) * 30 + 'px',
-              zIndex: 1000,
+              zIndex: 10,
               pointerEvents: 'none',
               width: drag.width + 'px',
               height: drag.height + 'px',

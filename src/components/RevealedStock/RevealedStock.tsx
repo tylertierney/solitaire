@@ -55,7 +55,7 @@ export default function RevealedStock({ cards = [] }: Props) {
                 position: 'fixed',
                 left: drag.x,
                 top: drag.y,
-                zIndex: 1000,
+                zIndex: 10,
                 pointerEvents: 'none',
                 width: drag.width + 'px',
                 height: drag.height + 'px',

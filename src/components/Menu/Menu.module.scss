@@ -1,0 +1,44 @@
+.ul {
+  list-style-type: none;
+  color: white;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+
+  .li {
+    display: flex;
+    align-items: center;
+    padding: 1rem 2rem;
+
+    &.moves {
+      justify-content: space-between;
+    }
+
+    &.newGame {
+      justify-content: center;
+      .btn {
+        background-color: rgb(135, 33, 76);
+        border: none;
+        display: flex;
+        color: white;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 18px;
+        font-size: 18px;
+        border-radius: 4px;
+        gap: 1rem;
+        cursor: pointer;
+
+        @media (hover: hover) {
+          &:hover {
+            background-color: rgb(149, 61, 98);
+          }
+        }
+      }
+    }
+  }
+}

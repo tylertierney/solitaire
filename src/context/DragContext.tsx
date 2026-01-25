@@ -8,10 +8,9 @@ import {
   type PropsWithChildren,
   type SetStateAction,
 } from 'react'
-import type { DragState } from '../components/GamePage/GamePage'
-import type { CardType } from '../models'
-import { useDispatch } from './HistoryContext'
+import type { CardType, DragState } from '../models'
 import { getDropZoneFromEvent } from '../utils/utils'
+import { useDispatch } from './HistoryContext'
 
 type DragContextType = {
   drag: DragState | null
@@ -65,8 +64,7 @@ export function DragProvider({ children }: PropsWithChildren) {
 
   const handlePointerUp = (e: PointerEvent) => {
     if (drag) {
-      console.log(drag)
-      const dropZone = getDropZoneFromEvent(e)
+      const dropZone = getDropZoneFromEvent(e, drag)
 
       if (!dropZone) {
         setDrag(null)

@@ -1,4 +1,10 @@
-import { cardValues, suits, type CardType, type GameState } from '../models'
+import {
+  cardValues,
+  suits,
+  type CardType,
+  type DragState,
+  type GameState,
+} from '../models'
 
 export function shuffleArray<T>(arr: T[]): T[] {
   let i = 0
@@ -53,9 +59,6 @@ export function getDefaultGameState(): GameState {
     foundations: [[], [], [], []],
     stockpile: [[], deck],
     tableau,
-    // tableau: tableau.map((t, i) =>
-    //   i === tableau.length - 1 ? t.map((c) => ({ ...c, hidden: false })) : t,
-    // ) as GameState['tableau'],
   }
 }
 
@@ -63,22 +66,38 @@ export function randBoolean(): boolean {
   return [true, false][~~(Math.random() * 2)]
 }
 
-export function getDropZoneFromEvent(
-  e: PointerEvent | React.PointerEvent,
-): HTMLDivElement | null {
-  let el = document.elementFromPoint(
-    e.clientX,
-    e.clientY,
-  ) as HTMLDivElement | null
-
+const traverseUpThroughDomForDropzoneAttr = (
+  el: HTMLDivElement | null,
+): HTMLDivElement | null => {
   while (el) {
     if (el.dataset.dropzone) {
       return el
     }
     el = el.parentElement as HTMLDivElement
   }
-
   return null
+}
+
+export function getDropZoneFromEvent(
+  e: PointerEvent | React.PointerEvent,
+  drag: DragState,
+): HTMLDivElement | null {
+  let el = document.elementFromPoint(
+    e.clientX,
+    e.clientY,
+  ) as HTMLDivElement | null
+
+  el = traverseUpThroughDomForDropzoneAttr(el)
+
+  // try a coord at the top middle of the card
+  if (!el) {
+    el = document.elementFromPoint(
+      drag.x - drag.offsetX + 0.5 * drag.width,
+      drag.y - drag.offsetY,
+    ) as HTMLDivElement | null
+  }
+
+  return traverseUpThroughDomForDropzoneAttr(el)
 }
 
 export function canMoveToFoundation(

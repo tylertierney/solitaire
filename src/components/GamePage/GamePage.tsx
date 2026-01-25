@@ -1,5 +1,5 @@
 import { useDispatch } from '../../context/HistoryContext'
-import type { CardType, GameState } from '../../models'
+import type { GameState } from '../../models'
 import { RefreshIcon } from '../../svg/RefreshIcon'
 import Deck from '../Deck/Deck'
 import RevealedStock from '../RevealedStock/RevealedStock'
@@ -9,16 +9,6 @@ import styles from './GamePage.module.scss'
 type Props = {
   gameState: GameState
   className?: string
-}
-
-export type DragState = {
-  card: CardType | null
-  offsetX: number
-  offsetY: number
-  x: number
-  y: number
-  width: number
-  height: number
 }
 
 export default function GamePage({ gameState, className = '' }: Props) {
