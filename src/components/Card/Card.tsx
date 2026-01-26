@@ -6,21 +6,14 @@ import {
   type PropsWithChildren,
   type RefObject,
 } from 'react'
-import {
-  suitToIconMap,
-  type CardType,
-  type CardValue,
-  type Suit,
-} from '../../models'
+import { suitToIconMap, type CardType } from '../../models'
 import CardTop from './CardTop/CardTop'
 
 type Props = Omit<
   HTMLAttributes<HTMLDivElement>,
   'onClick' | 'onPointerDown'
 > & {
-  suit: Suit
-  value: CardValue
-  hidden: boolean
+  card: CardType
   ref?: RefObject<HTMLDivElement | null>
   onClick?: (e: MouseEvent<HTMLDivElement>, card: CardType) => void
   onPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void
@@ -29,9 +22,7 @@ type Props = Omit<
 }
 
 export default function Card({
-  suit,
-  value,
-  hidden,
+  card,
   ref,
   onClick,
   onPointerDown,
@@ -40,6 +31,7 @@ export default function Card({
   children,
   ...rest
 }: PropsWithChildren<Props>) {
+  const { suit, value, hidden } = card
   const icon = suitToIconMap[suit]({ style: { height: '100%', width: '100%' } })
 
   return (
@@ -56,7 +48,7 @@ export default function Card({
         target.releasePointerCapture(e.pointerId)
       }}
       onClick={(e) => {
-        onClick?.(e, { suit, value } as CardType)
+        onClick?.(e, card)
       }}
     >
       <div className={styles.inner}>

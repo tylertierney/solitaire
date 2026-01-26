@@ -3,6 +3,7 @@ import { useDrag } from '../../context/DragContext'
 import type { CardType } from '../../models'
 import Card from '../Card/Card'
 import styles from './Tower.module.scss'
+import { useDispatch } from '../../context/HistoryContext'
 
 type Props = {
   cards: CardType[]
@@ -13,6 +14,7 @@ type Props = {
 export default function Tower({ cards, index = 0, dragIndex = 0 }: Props) {
   const { drag, handlePointerDown } = useDrag()
   const cardRef = useRef<HTMLDivElement | null>(null)
+  const dispatch = useDispatch()
 
   if (!cards.length) return null
 
@@ -55,11 +57,9 @@ export default function Tower({ cards, index = 0, dragIndex = 0 }: Props) {
       <Card
         ref={cardRef}
         className={styles.card}
-        suit={bottomCard.suit}
-        value={bottomCard.value}
-        hidden={bottomCard.hidden}
-        onClick={(e, { suit, value }) => {
-          console.log(suit + value)
+        card={bottomCard}
+        onClick={(_, card) => {
+          dispatch({ type: 'clickCard', card })
         }}
       />
       <Tower

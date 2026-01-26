@@ -26,10 +26,15 @@ export type Action =
       targetTableauIdx: number
       card: CardType
     }
+  | {
+      type: 'clickCard'
+      card: CardType
+    }
   | { type: 'refreshStockpile' }
   | { type: 'undo' }
   | { type: 'redo' }
-  | { type: 'reset' }
+  | { type: 'restart' }
+  | { type: 'newGame' }
 
 export const HistoryContext = createContext<History>({
   moves: [getDefaultGameState()],
@@ -38,6 +43,135 @@ export const HistoryContext = createContext<History>({
 export const DispatchContext = createContext<Dispatch<Action>>(() => ({}))
 
 type GameReducer = Reducer<History, Action>
+
+const moveToFoundation = (
+  currState: GameState,
+  foundationIdx: number,
+  card: CardType,
+  moves: GameState[],
+  index: number,
+) => {
+  if (!canMoveToFoundation(currState.foundations[foundationIdx], card)) {
+    return { moves, index }
+  }
+
+  const newTableau = [] as unknown as GameState['tableau']
+
+  let i = 0
+  while (i < currState.tableau.length) {
+    let j = 0
+    const tower: CardType[] = []
+    while (j < currState.tableau[i].length) {
+      const c = currState.tableau[i][j]
+      if (c.id === card.id) {
+        const prevCard = tower[j - 1]
+        if (prevCard) {
+          prevCard.hidden = false
+        }
+      } else {
+        tower.push(c)
+      }
+      j++
+    }
+    newTableau.push(tower)
+    i++
+  }
+
+  const newState: GameState = {
+    foundations: currState.foundations.map((f, i) => {
+      if (i === foundationIdx) {
+        return [...f, card]
+      }
+      return f.filter((c) => c.id !== card.id)
+    }) as GameState['foundations'],
+    stockpile: currState.stockpile.map((s) =>
+      s.filter((c) => c.id !== card.id),
+    ) as GameState['stockpile'],
+    tableau: newTableau,
+  }
+  return {
+    moves: [...moves.slice(0, index + 1), newState],
+    index: index + 1,
+  }
+}
+
+const moveToTableau = (
+  currState: GameState,
+  card: CardType,
+  targetTableauIdx: number,
+  moves: GameState[],
+  index: number,
+) => {
+  // find if card comes from another tableau tower
+  let [sourceTableauIdx, sourceTableauTowerIdx] = [-1, -1]
+
+  currState.tableau.forEach((t, i) => {
+    const sourceCardIdx = t.findIndex((c) => c.id === card.id)
+    if (sourceCardIdx > -1) {
+      sourceTableauIdx = i
+      sourceTableauTowerIdx = sourceCardIdx
+    }
+  })
+
+  const newState = cloneGameState(currState)
+
+  if (sourceTableauIdx > -1 && sourceTableauTowerIdx > -1) {
+    // card comes from a tableau tower
+
+    const cardAndDescendents = currState.tableau[sourceTableauIdx].slice(
+      sourceTableauTowerIdx,
+    )
+
+    if (
+      !canMoveToTableau(
+        currState.tableau[targetTableauIdx].at(-1),
+        cardAndDescendents[0],
+      )
+    ) {
+      return { moves, index }
+    }
+
+    newState.tableau[targetTableauIdx] = [
+      ...newState.tableau[targetTableauIdx],
+      ...cardAndDescendents,
+    ]
+
+    const prevCardFromSourceTower = newState.tableau[sourceTableauIdx].at(
+      sourceTableauTowerIdx - 1,
+    )
+    if (prevCardFromSourceTower) {
+      prevCardFromSourceTower.hidden = false
+    }
+    newState.tableau[sourceTableauIdx] = newState.tableau[
+      sourceTableauIdx
+    ].slice(0, sourceTableauTowerIdx)
+
+    return {
+      moves: [...moves.slice(0, index + 1), newState],
+      index: index + 1,
+    }
+  } else {
+    // card comes from foundation or stockpile
+    if (!canMoveToTableau(currState.tableau[targetTableauIdx].at(-1), card)) {
+      return { moves, index }
+    }
+
+    // filter the card out from all arrays
+    newState.foundations = newState.foundations.map((arr) =>
+      arr.filter((c) => c.id !== card.id),
+    ) as GameState['foundations']
+    newState.stockpile = newState.stockpile.map((arr) =>
+      arr.filter((c) => c.id !== card.id),
+    ) as GameState['stockpile']
+
+    newState.tableau[targetTableauIdx].push(card)
+
+    return {
+      moves: [...moves.slice(0, index + 1), newState],
+      index: index + 1,
+    }
+  }
+}
 
 const gameReducer: GameReducer = (
   history: History,
@@ -68,123 +202,35 @@ const gameReducer: GameReducer = (
     case 'moveToFoundation': {
       const { foundationIdx, card } = action
 
-      if (!canMoveToFoundation(currState.foundations[foundationIdx], card)) {
-        return { moves, index }
-      }
-
-      const newTableau = [] as unknown as GameState['tableau']
-
-      let i = 0
-      while (i < currState.tableau.length) {
-        let j = 0
-        const tower: CardType[] = []
-        while (j < currState.tableau[i].length) {
-          const c = currState.tableau[i][j]
-          if (c.id === card.id) {
-            const prevCard = tower[j - 1]
-            if (prevCard) {
-              prevCard.hidden = false
-            }
-          } else {
-            tower.push(c)
-          }
-          j++
-        }
-        newTableau.push(tower)
-        i++
-      }
-
-      const newState: GameState = {
-        foundations: currState.foundations.map((f, i) => {
-          if (i === foundationIdx) {
-            return [...f, card]
-          }
-          return f.filter((c) => c.id !== card.id)
-        }) as GameState['foundations'],
-        stockpile: currState.stockpile.map((s) =>
-          s.filter((c) => c.id !== card.id),
-        ) as GameState['stockpile'],
-        tableau: newTableau,
-      }
-      return {
-        moves: [...moves.slice(0, index + 1), newState],
-        index: index + 1,
-      }
+      return moveToFoundation(currState, foundationIdx, card, moves, index)
     }
     case 'moveToTableau': {
       const { targetTableauIdx, card } = action
 
-      // find if card comes from another tableau tower
-      let [sourceTableauIdx, sourceTableauTowerIdx] = [-1, -1]
+      return moveToTableau(currState, card, targetTableauIdx, moves, index)
+    }
+    case 'clickCard': {
+      const { card } = action
 
-      currState.tableau.forEach((t, i) => {
-        const sourceCardIdx = t.findIndex((c) => c.id === card.id)
-        if (sourceCardIdx > -1) {
-          sourceTableauIdx = i
-          sourceTableauTowerIdx = sourceCardIdx
+      let i = 0
+      while (i < currState.foundations.length) {
+        const f = currState.foundations[i]
+        if (canMoveToFoundation(f, card)) {
+          return moveToFoundation(currState, i, card, moves, index)
         }
-      })
-
-      const newState = cloneGameState(currState)
-
-      if (sourceTableauIdx > -1 && sourceTableauTowerIdx > -1) {
-        // card comes from a tableau tower
-
-        const cardAndDescendents = currState.tableau[sourceTableauIdx].slice(
-          sourceTableauTowerIdx,
-        )
-
-        if (
-          !canMoveToTableau(
-            currState.tableau[targetTableauIdx].at(-1),
-            cardAndDescendents[0],
-          )
-        ) {
-          return { moves, index }
-        }
-
-        newState.tableau[targetTableauIdx] = [
-          ...newState.tableau[targetTableauIdx],
-          ...cardAndDescendents,
-        ]
-
-        const prevCardFromSourceTower = newState.tableau[sourceTableauIdx].at(
-          sourceTableauTowerIdx - 1,
-        )
-        if (prevCardFromSourceTower) {
-          prevCardFromSourceTower.hidden = false
-        }
-        newState.tableau[sourceTableauIdx] = newState.tableau[
-          sourceTableauIdx
-        ].slice(0, sourceTableauTowerIdx)
-
-        return {
-          moves: [...moves.slice(0, index + 1), newState],
-          index: index + 1,
-        }
-      } else {
-        // card comes from foundation or stockpile
-        if (
-          !canMoveToTableau(currState.tableau[targetTableauIdx].at(-1), card)
-        ) {
-          return { moves, index }
-        }
-
-        // filter the card out from all arrays
-        newState.foundations = newState.foundations.map((arr) =>
-          arr.filter((c) => c.id !== card.id),
-        ) as GameState['foundations']
-        newState.stockpile = newState.stockpile.map((arr) =>
-          arr.filter((c) => c.id !== card.id),
-        ) as GameState['stockpile']
-
-        newState.tableau[targetTableauIdx].push(card)
-
-        return {
-          moves: [...moves.slice(0, index + 1), newState],
-          index: index + 1,
-        }
+        i++
       }
+
+      i = 0
+      while (i < currState.tableau.length) {
+        const t = currState.tableau[i]
+        if (canMoveToTableau(t.at(-1), card)) {
+          return moveToTableau(currState, card, i, moves, index)
+        }
+        i++
+      }
+
+      return { moves, index }
     }
     case 'refreshStockpile': {
       const newState: GameState = {
@@ -215,7 +261,10 @@ const gameReducer: GameReducer = (
         index: index + 1,
       }
     }
-    case 'reset': {
+    case 'restart': {
+      return { moves: moves.slice(0, 1), index: 0 }
+    }
+    case 'newGame': {
       return { moves: [getDefaultGameState()], index: 0 }
     }
     default: {

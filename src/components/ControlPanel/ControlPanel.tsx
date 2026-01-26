@@ -39,7 +39,7 @@ export default function ControlPanel() {
         </button>
       </div>
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-        <Menu onNewGame={() => setModalOpen(false)} />
+        <Menu onClose={() => setModalOpen(false)} />
       </Modal>
     </>
   )

@@ -2,6 +2,7 @@ import styles from './RevealedStock.module.scss'
 import type { CardType } from '../../models'
 import Card from '../Card/Card'
 import { useDrag } from '../../context/DragContext'
+import { useDispatch } from '../../context/HistoryContext'
 
 type Props = {
   cards: CardType[]
@@ -9,6 +10,8 @@ type Props = {
 
 export default function RevealedStock({ cards = [] }: Props) {
   const { drag, handlePointerDown } = useDrag()
+  const dispatch = useDispatch()
+
   if (!cards.length) return null
 
   const topCard = cards.at(-1) as CardType
@@ -21,9 +24,7 @@ export default function RevealedStock({ cards = [] }: Props) {
     <div className={styles.revealedStock}>
       {thirdCard && (
         <Card
-          suit={thirdCard.suit}
-          value={thirdCard.value}
-          hidden={false}
+          card={thirdCard}
           className={styles.card}
           style={{
             right: '92%',
@@ -33,9 +34,7 @@ export default function RevealedStock({ cards = [] }: Props) {
       )}
       {secondCard && (
         <Card
-          suit={secondCard.suit}
-          value={secondCard.value}
-          hidden={false}
+          card={secondCard}
           className={styles.card}
           style={{
             right: '46%',
@@ -44,11 +43,12 @@ export default function RevealedStock({ cards = [] }: Props) {
         />
       )}
       <Card
-        suit={topCard.suit}
-        value={topCard.value}
-        hidden={false}
+        card={topCard}
         className={styles.card}
         onPointerDown={(e) => handlePointerDown(e, topCard)}
+        onClick={() => {
+          dispatch({ type: 'clickCard', card: topCard })
+        }}
         style={
           isDragging
             ? {
