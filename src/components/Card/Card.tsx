@@ -53,9 +53,7 @@ export default function Card({
     >
       <div className={styles.inner}>
         <div className={`${styles.front} ${styles[suit]}`}>
-          <div className={styles.top}>
-            <CardTop suit={suit} value={value} />
-          </div>
+          <CardTop className={styles.top} suit={suit} value={value} />
           <div className={styles.middle}>
             {icon}
             {children}
