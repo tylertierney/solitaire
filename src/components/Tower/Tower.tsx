@@ -59,7 +59,9 @@ export default function Tower({ cards, index = 0, dragIndex = 0 }: Props) {
         className={styles.card}
         card={bottomCard}
         onClick={(_, card) => {
-          dispatch({ type: 'clickCard', card })
+          if (!bottomCard.hidden) {
+            dispatch({ type: 'clickCard', card })
+          }
         }}
       />
       <Tower
