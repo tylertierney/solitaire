@@ -12,6 +12,15 @@ import type { CardType, DragState } from '../models'
 import { getDropZoneFromEvent } from '../utils/utils'
 import { useDispatch } from './HistoryContext'
 
+type PendingDrag = {
+  card: CardType
+  startX: number
+  startY: number
+  offsetX: number
+  offsetY: number
+  rect: DOMRect
+}
+
 type DragContextType = {
   drag: DragState | null
   setDrag: Dispatch<SetStateAction<DragState | null>>
@@ -19,18 +28,19 @@ type DragContextType = {
     e: React.PointerEvent<HTMLDivElement>,
     card: CardType,
   ) => void
-  handlePointerMove: (e: PointerEvent) => void
 }
+
+const DRAG_THRESHOLD = 3
 
 export const DragContext = createContext<DragContextType>({
   drag: null,
   setDrag: () => ({}),
   handlePointerDown: () => ({}),
-  handlePointerMove: () => ({}),
 })
 
 export function DragProvider({ children }: PropsWithChildren) {
   const [drag, setDrag] = useState<DragState | null>(null)
+  const [pendingDrag, setPendingDrag] = useState<PendingDrag | null>(null)
   const dispatch = useDispatch()
 
   const handlePointerDown = (
@@ -39,66 +49,84 @@ export function DragProvider({ children }: PropsWithChildren) {
   ) => {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
 
-    setDrag({
+    setPendingDrag({
       card,
+      startX: e.clientX,
+      startY: e.clientY,
       offsetX: e.clientX - rect.left,
       offsetY: e.clientY - rect.top,
-      x: rect.left,
-      y: rect.top,
-      width: rect.width,
-      height: rect.height,
+      rect,
     })
   }
 
   const handlePointerMove = (e: PointerEvent) => {
-    setDrag((prev) =>
-      prev
-        ? {
-            ...prev,
-            x: e.clientX - prev.offsetX,
-            y: e.clientY - prev.offsetY,
-          }
-        : null,
-    )
+    // Promote pending -> real drag
+    if (pendingDrag && !drag) {
+      const dx = e.clientX - pendingDrag.startX
+      const dy = e.clientY - pendingDrag.startY
+
+      if (Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+        setDrag({
+          card: pendingDrag.card,
+          offsetX: pendingDrag.offsetX,
+          offsetY: pendingDrag.offsetY,
+          x: pendingDrag.rect.left,
+          y: pendingDrag.rect.top,
+          width: pendingDrag.rect.width,
+          height: pendingDrag.rect.height,
+        })
+        setPendingDrag(null)
+      }
+      return
+    }
+
+    if (drag) {
+      setDrag((prev) =>
+        prev
+          ? {
+              ...prev,
+              x: e.clientX - prev.offsetX,
+              y: e.clientY - prev.offsetY,
+            }
+          : null,
+      )
+    }
   }
 
   const handlePointerUp = (e: PointerEvent) => {
-    if (drag) {
-      const dropZone = getDropZoneFromEvent(e, drag)
+    // If we never promoted → this was a click
+    if (!drag) {
+      setPendingDrag(null)
+      return
+    }
 
-      if (!dropZone) {
-        setDrag(null)
-        return
-      }
+    const dropZone = getDropZoneFromEvent(e, drag)
 
-      const foundationDataEl = dropZone.dataset['foundation']
+    if (dropZone) {
+      const foundationIdx = dropZone.dataset['foundation']
+      const tableauIdx = dropZone.dataset['tableau']
 
-      if (foundationDataEl) {
-        const foundationIdx = parseInt(foundationDataEl, 10)
+      if (foundationIdx) {
         dispatch({
           type: 'moveToFoundation',
           card: drag.card as CardType,
-          foundationIdx,
+          foundationIdx: parseInt(foundationIdx, 10),
         })
       }
 
-      const tableauDataEl = dropZone.dataset['tableau']
-
-      if (tableauDataEl) {
-        const targetTableauIdx = parseInt(tableauDataEl, 10)
+      if (tableauIdx) {
         dispatch({
           type: 'moveToTableau',
-          targetTableauIdx,
           card: drag.card as CardType,
+          targetTableauIdx: parseInt(tableauIdx, 10),
         })
       }
     }
+
     setDrag(null)
   }
 
   useEffect(() => {
-    if (!drag) return
-
     window.addEventListener('pointermove', handlePointerMove)
     window.addEventListener('pointerup', handlePointerUp)
 
@@ -106,7 +134,7 @@ export function DragProvider({ children }: PropsWithChildren) {
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
     }
-  }, [drag])
+  }, [pendingDrag, drag])
 
   return (
     <DragContext.Provider
@@ -114,7 +142,6 @@ export function DragProvider({ children }: PropsWithChildren) {
         drag,
         setDrag,
         handlePointerDown,
-        handlePointerMove,
       }}
     >
       {children}

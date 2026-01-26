@@ -2,6 +2,7 @@ import styles from './Card.module.scss'
 import {
   type CSSProperties,
   type HTMLAttributes,
+  type MouseEvent,
   type PropsWithChildren,
   type RefObject,
 } from 'react'
@@ -21,7 +22,7 @@ type Props = Omit<
   value: CardValue
   hidden: boolean
   ref?: RefObject<HTMLDivElement | null>
-  onClick?: (card: CardType) => void
+  onClick?: (e: MouseEvent<HTMLDivElement>, card: CardType) => void
   onPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void
   style?: CSSProperties
   className?: string
@@ -54,8 +55,8 @@ export default function Card({
         const target = e.target as HTMLDivElement
         target.releasePointerCapture(e.pointerId)
       }}
-      onClick={() => {
-        onClick?.({ suit, value } as CardType)
+      onClick={(e) => {
+        onClick?.(e, { suit, value } as CardType)
       }}
     >
       <div className={styles.inner}>

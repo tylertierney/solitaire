@@ -42,9 +42,6 @@ export default function Tower({ cards, index = 0, dragIndex = 0 }: Props) {
               top: index === 0 ? 0 : '30px',
             }
       }
-      onClick={(e) => {
-        e.stopPropagation()
-      }}
       onPointerDown={(e) => {
         if (bottomCard.hidden) return
         handlePointerDown?.(e, bottomCard)
@@ -61,6 +58,9 @@ export default function Tower({ cards, index = 0, dragIndex = 0 }: Props) {
         suit={bottomCard.suit}
         value={bottomCard.value}
         hidden={bottomCard.hidden}
+        onClick={(e, { suit, value }) => {
+          console.log(suit + value)
+        }}
       />
       <Tower
         cards={restOfCards}
