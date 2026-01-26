@@ -160,11 +160,13 @@ export function canMoveToTableau(
 export const cloneGameState = (prev: GameState): GameState => {
   return {
     foundations: [
-      ...prev.foundations.map((arr) => [...arr]),
+      ...prev.foundations.map((arr) => [...arr.map((c) => ({ ...c }))]),
     ] as GameState['foundations'],
     stockpile: [
-      ...prev.stockpile.map((arr) => [...arr]),
+      ...prev.stockpile.map((arr) => [...arr.map((c) => ({ ...c }))]),
     ] as GameState['stockpile'],
-    tableau: [...prev.tableau.map((arr) => [...arr])] as GameState['tableau'],
+    tableau: [
+      ...prev.tableau.map((arr) => [...arr.map((c) => ({ ...c }))]),
+    ] as GameState['tableau'],
   }
 }
